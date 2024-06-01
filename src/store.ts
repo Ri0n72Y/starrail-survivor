@@ -76,10 +76,12 @@ interface Enemies {
   hps: Record<string, number>;
   types: Record<string, string>;
   positions: Record<string, { x: number; y: number }>;
+  elites: string[];
   addEnemies: (enemies: EnemyCreate[]) => void;
   updateEnemy: (enemy: EnemyUpdate) => void;
   updateEnemies: (enemies: EnemyUpdate[]) => void;
   killEnemy: (id: string) => void;
+  removeEnemy: (id: string) => void;
 }
 
 export const useEnemies = create<Enemies>()((set, get) => ({
@@ -98,6 +100,7 @@ export const useEnemies = create<Enemies>()((set, get) => ({
   hps: {},
   types: {},
   positions: {},
+  elites: [],
   addEnemies: (enemies) => {
     const newHps: Record<string, number> = {};
     const newPositions: Record<string, { x: number; y: number }> = {};
@@ -130,6 +133,11 @@ export const useEnemies = create<Enemies>()((set, get) => ({
     });
   },
   killEnemy: (id) => {
+    delete get().hps[id];
+    delete get().positions[id];
+    delete get().types[id];
+  },
+  removeEnemy: (id) => {
     delete get().hps[id];
     delete get().positions[id];
     delete get().types[id];

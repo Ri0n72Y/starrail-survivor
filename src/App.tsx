@@ -1,6 +1,6 @@
 import "./App.css";
 
-import { Stage, Container, Sprite, Text } from "@pixi/react";
+import { Stage, Container, Text } from "@pixi/react";
 import { KeyboardInput, useKeyState } from "./keyboard";
 import { useEffect } from "react";
 import { usePlayers } from "./store";
@@ -27,7 +27,6 @@ const App = () => {
     addPlayer(star);
     return () => removePlayer("star");
   }, [addPlayer, removePlayer]);
-  const bunnyUrl = "https://pixijs.io/pixi-react/img/bunny.png";
   const keys = useKeyState((state) =>
     Object.keys(state.keyState).reduce((acc, key) => {
       if (state.keyState[key]) {
@@ -43,8 +42,6 @@ const App = () => {
         height={ClinetHeight}
         options={{ background: 0x1099bb, autoStart: true }}
       >
-        <Sprite image={bunnyUrl} x={300} y={150} />
-        <Sprite image={bunnyUrl} x={500} y={150} />
         <Mobs />
 
         {Object.keys(players).map((id) => (

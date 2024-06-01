@@ -1,5 +1,5 @@
 import { Container, Sprite, useTick, withFilters } from "@pixi/react";
-import { useCamera, useEnemies, usePlayers } from "./store";
+import { useCamera, useEnemies } from "./store";
 import { add, distance, mul, normalize, sub } from "./math";
 import { AdjustmentFilter } from "@pixi/filter-adjustment";
 import { useState } from "react";
@@ -71,13 +71,15 @@ export function Mobs() {
 function Mob({ id }: { id: string }) {
   const [isHurt, setIsHurt] = useState(false);
   const [x, y] = useCamera((state) => [state.x, state.y]);
-  const players = usePlayers((state) => state.positions);
-  const [hp, pos, type, update, kill] = useEnemies((state) => [
+  // const players = usePlayers((state) => state.positions);
+  const [hp, pos, type, elites, update, kill, remove] = useEnemies((state) => [
     state.hps[id],
     state.positions[id],
     state.types[id],
+    state.elites,
     state.updateEnemy,
     state.killEnemy,
+    state.removeEnemy,
   ]);
   const meta = useEnemies((state) => state.enemyMeta[type]);
   useTick((delta) => {
@@ -85,14 +87,20 @@ function Mob({ id }: { id: string }) {
       kill(id);
       return;
     }
-    let minDist = Infinity;
-    let targetPos = pos;
-    for (const target of Object.values(players)) {
-      const dist = distance(pos, target);
-      if (dist < minDist) {
-        minDist = dist;
-        targetPos = target;
-      }
+    // let minDist = Infinity;
+    // let targetPos = pos;
+    // for (const target of Object.values(players)) {
+    //   const dist = distance(pos, target);
+    //   if (dist < minDist) {
+    //     minDist = dist;
+    //     targetPos = target;
+    //   }
+    // }
+    const targetPos = { x, y };
+    const minDist = distance(pos, targetPos);
+    if (minDist > 500 && !elites.includes(id)) {
+      remove(id);
+      return;
     }
     if (minDist < 10) {
       update({ id, hp: 0, position: pos });
