@@ -1,0 +1,11 @@
+[
+  {
+    "id": "test",
+    "name": "Test Mob",
+    "hp": 10,
+    "speed": 5,
+    "damege": 1,
+    "move": "player",
+    "exp": 1
+  }
+]

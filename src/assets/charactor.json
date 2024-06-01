@@ -1,0 +1,8 @@
+[
+  {
+    "id": "star",
+    "name": "Star",
+    "hp": 50,
+    "speed": 10
+  }
+]
