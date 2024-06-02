@@ -14,7 +14,7 @@ interface Weapon {
 const extinguisher: Weapon = {
   id: "extinguisher",
   baseDamage: 10,
-  baseDelay: 5000,
+  baseDelay: 1000,
   strength: 5,
 };
 

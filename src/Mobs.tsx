@@ -12,8 +12,9 @@ import {
   FR_SCALE as scale,
 } from "./constants";
 import { add, distance, mag, mul, normalize, sub } from "./math";
-import { useCamera, useEnemies } from "./store";
+import { useCamera, useEnemies, useScore, usePlayerHurt } from "./store";
 import { DebugCollision } from "./debug/collision";
+import { useDifficulty } from "./store/useDifficulty";
 
 const Filters = withFilters(Container, {
   adjust: AdjustmentFilter,
@@ -27,10 +28,15 @@ const filters = {
 export function Mobs() {
   const [enemies, add] = useEnemies((state) => [state.hps, state.addEnemies]);
   const [x, y] = useCamera((state) => [state.x, state.y]);
+  const score = useScore((state) => state.score);
   // spawn
   useInterval(() => {
     if (Object.keys(enemies).length < maximum) {
-      const sample = { hp: 20, type: "test" };
+      const baseHp = Math.round(score / 50);
+      const sample = {
+        hp: baseHp * 6 + Math.round(Math.random() * baseHp * 4),
+        type: "test",
+      };
       const res = new Array(maximum - Object.keys(enemies).length)
         .fill(sample)
         .map((s) => {
@@ -74,9 +80,12 @@ export function Mobs() {
 function Mob({ id }: { id: string }) {
   const [isHurt, setIsHurt] = useState(false);
   const [x, y] = useCamera((state) => [state.x, state.y]);
-  // const players = usePlayers((state) => state.positions);
-  const [hp, velocity, pos, type, elites, update, kill, remove] = useEnemies(
-    (state) => [
+  const [player, setHurt] = usePlayerHurt((state) => [
+    state["star"], // TODO: remove hard value
+    state.setHurt,
+  ]);
+  const [hp, velocity, pos, type, elites, update, kill, remove, info] =
+    useEnemies((state) => [
       state.hps[id],
       state.velocitys[id],
       state.positions[id],
@@ -85,16 +94,19 @@ function Mob({ id }: { id: string }) {
       state.updateEnemy,
       state.killEnemy,
       state.removeEnemy,
-    ]
-  );
+      state.enemyMeta,
+    ]);
   const [hurt, toggleHurt] = useEnemies((state) => [
     state.hurts[id],
     state.toggleHurt,
   ]);
+  const setScore = useScore((state) => state.setScore);
+  const speedScale = useDifficulty((state) => state.speed);
   const meta = useEnemies((state) => state.enemyMeta[type]);
   useTick((delta) => {
     if (hp <= 0) {
       kill(id);
+      setScore((s) => s + 5);
       return;
     }
     // multiplayer support
@@ -120,15 +132,16 @@ function Mob({ id }: { id: string }) {
         toggleHurt(id);
       }, 150);
     }
-    // // hit part
-    // if (minDist < MobSizeHalf) {
-    //   update({ id, position: pos });
-    //   return;
-    // }
+    // hit part
+    if (minDist < MobSizeHalf) {
+      if (!player) {
+        setHurt("star", info[type].damege);
+      }
+    }
 
     // update velocity
     const dir = normalize(sub(targetPos, pos));
-    const speed = meta.speed * delta * scale;
+    const speed = meta.speed * delta * scale * speedScale;
     const velo = mul(dir, speed);
     const magnitude = mag(velocity);
     const displacement = magnitude > 0 ? add(velo, velocity) : velo;

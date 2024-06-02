@@ -11,7 +11,7 @@ const Filters = withFilters(Container, {
   // blur: BlurFilter,
 });
 
-const baseRadius = 40 as const;
+const baseRadius = 60 as const;
 const baseArea = 5 as const;
 const area = 10 as const;
 
@@ -42,15 +42,16 @@ export function Extinguisher({ id }: { id: string }) {
   const draw = useCallback(
     (g: PixiGraphics) => {
       const e = colors.elements;
+      const scale = getScale(level);
       g.clear();
-      g.lineStyle(area, e.iceBlue, Math.cos(cd / 1000) * 0.2 + 0.6);
-      g.drawCircle(0, 0, baseRadius);
+      g.lineStyle(area * scale, e.iceBlue, Math.sin(cd / 1000) * 0.8 + 0.2);
+      g.drawCircle(0, 0, baseRadius * scale);
     },
-    [cd]
+    [cd, level]
   );
-  useTick((delta) => {
+  useTick((_, ticker) => {
     if (cd > 0) {
-      update("extinguisher", cd - delta * 100);
+      update("extinguisher", cd - ticker.deltaMS);
       return;
     }
     // hit collited enemies
@@ -77,9 +78,10 @@ export function Extinguisher({ id }: { id: string }) {
     const next = effectEnemies.map((id) => {
       const hitback = mul(normalize(sub(mobPos[id], playerPos)), info.strength);
       if (!hurts[id]) toggleHurt(id);
+      const scale = getScale(level);
       return {
         id,
-        hp: hps[id] - info.baseDamage * player.strength,
+        hp: hps[id] - info.baseDamage * player.strength * scale,
         velocity: hitback,
       };
     });

@@ -19,5 +19,6 @@ export function DebugCollision({
     },
     [color]
   );
+  return null;
   return <Graphics draw={draw} {...props} />;
 }

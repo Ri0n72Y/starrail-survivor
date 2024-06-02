@@ -10,8 +10,9 @@ import {
 } from "./constants";
 import { useInput } from "./keyboard";
 import { add, mul, normalize } from "./math";
-import { useCamera, usePlayers } from "./store";
+import { useCamera, useGame, usePlayerHurt, usePlayers } from "./store";
 import { DebugCollision } from "./debug/collision";
+import { Bar } from "./ui/Bar";
 
 const Filters = withFilters(Container, {
   adjust: AdjustmentFilter,
@@ -26,13 +27,17 @@ const bunnyUrl = "/assets/chara.png";
 export function Player({ id }: { id: string }) {
   const input = useInput();
   const [isHurt, setIsHurt] = useState(false);
-  const [player, pos, setPos] = usePlayers((state) => [
+  const [player, pos, setPos, updateHp] = usePlayers((state) => [
     state.players[id],
     state.positions[id],
     state.setPosition,
+    state.updatePlayerHp,
   ]);
+  const [hurt, setHurt] = usePlayerHurt((state) => [state[id], state.setHurt]);
   const [setX, setY] = useCamera((state) => [state.setX, state.setY]);
-  useTick((delta) => {
+  const endgame = useGame((state) => state.setGameover);
+  useTick((delta, ticker) => {
+    // position
     let x = 0;
     let y = 0;
     if (input.moveLeft) x -= 1;
@@ -46,6 +51,23 @@ export function Player({ id }: { id: string }) {
     setPos(id, add(pos, velocity));
     setX(pos.x - velocity.x);
     setY(pos.y - velocity.y);
+
+    // hurt
+    if (hurt && !isHurt) {
+      setIsHurt(true);
+      updateHp(id, player.hp - (hurt as unknown as number));
+      setTimeout(() => {
+        setIsHurt(false);
+        setHurt(id, 0);
+        console.log(player.hp);
+      }, 300);
+    }
+
+    // gameover
+    if (player.hp <= 0) {
+      ticker.stop();
+      endgame(true);
+    }
   });
   if (!player) return null;
   return (
@@ -57,10 +79,14 @@ export function Player({ id }: { id: string }) {
         height={MobSize}
         x={ClinetWidth / 2}
         y={ClinetHeight / 2}
-        pointerdown={() => {
-          setIsHurt(!isHurt);
-        }}
         anchor={0.5}
+      />
+      <Bar
+        x={ClinetWidth / 2}
+        y={ClinetHeight / 2 + 30}
+        max={player.maxHp}
+        current={player.hp}
+        color={0xff0000}
       />
       <DebugCollision x={ClinetWidth / 2} y={ClinetHeight / 2} />
     </Filters>
