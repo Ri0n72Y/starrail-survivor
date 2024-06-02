@@ -1,4 +1,5 @@
 import { create } from "zustand";
+export { useEnemies } from "./store/useEnemies";
 
 export const useCamera = create<{
   x: number;
@@ -13,12 +14,17 @@ export const useCamera = create<{
 }));
 
 interface Player {
+  // metadata
   id: string;
   name: string;
-  score: number;
-  hp: number;
   maxHp: number;
   speed: number;
+  // stats
+  score: number;
+  hp: number;
+  strength: number;
+  cooldown: number;
+  speedScale: number;
 }
 
 interface Players {
@@ -49,97 +55,5 @@ export const usePlayers = create<Players>()((set, get) => ({
   removePlayer: (id) => {
     delete get().players[id];
     delete get().positions[id];
-  },
-}));
-
-interface EnemyType {
-  id: string;
-  name: string;
-  hp: number;
-  speed: number;
-  damege: number;
-  exp: number;
-  move: "player" | "random" | "static";
-  direction?: { x: number; y: number };
-}
-interface EnemyUpdate {
-  id: string;
-  hp: number;
-  position: { x: number; y: number };
-}
-interface EnemyCreate extends EnemyUpdate {
-  type: string;
-}
-interface Enemies {
-  enemyMeta: Record<string, EnemyType>;
-  loadEnemyMeta: () => void;
-  hps: Record<string, number>;
-  types: Record<string, string>;
-  positions: Record<string, { x: number; y: number }>;
-  elites: string[];
-  addEnemies: (enemies: EnemyCreate[]) => void;
-  updateEnemy: (enemy: EnemyUpdate) => void;
-  updateEnemies: (enemies: EnemyUpdate[]) => void;
-  killEnemy: (id: string) => void;
-  removeEnemy: (id: string) => void;
-}
-
-export const useEnemies = create<Enemies>()((set, get) => ({
-  enemyMeta: {
-    test: {
-      id: "test",
-      name: "Test Mob",
-      hp: 10,
-      speed: 5,
-      damege: 1,
-      move: "player",
-      exp: 1,
-    },
-  },
-  loadEnemyMeta: () => {},
-  hps: {},
-  types: {},
-  positions: {},
-  elites: [],
-  addEnemies: (enemies) => {
-    const newHps: Record<string, number> = {};
-    const newPositions: Record<string, { x: number; y: number }> = {};
-    const newTypes: Record<string, string> = {};
-    enemies.forEach((enemy) => {
-      newHps[enemy.id] = enemy.hp;
-      newPositions[enemy.id] = enemy.position;
-      newTypes[enemy.id] = enemy.type;
-    });
-    set({
-      hps: { ...get().hps, ...newHps },
-      positions: { ...get().positions, ...newPositions },
-      types: { ...get().types, ...newTypes },
-    });
-  },
-  updateEnemy: ({ id, hp, position }) => {
-    set((state) => ({
-      hps: { ...state.hps, [id]: hp },
-      positions: { ...state.positions, [id]: position },
-    }));
-  },
-  updateEnemies: (enemies) => {
-    // TODO: hp < 0 remove
-    set((state) => {
-      const newPositions = { ...state.positions };
-      enemies.forEach((enemy) => {
-        newPositions[enemy.id] = enemy.position;
-      });
-      return { positions: newPositions };
-    });
-  },
-  killEnemy: (id) => {
-    delete get().hps[id];
-    delete get().positions[id];
-    delete get().types[id];
-  },
-  removeEnemy: (id) => {
-    delete get().hps[id];
-    delete get().positions[id];
-    delete get().types[id];
   },
 }));

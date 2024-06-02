@@ -1,22 +1,28 @@
+import "@pixi/events";
+import { AdjustmentFilter } from "@pixi/filter-adjustment";
 import { Container, Sprite, useTick, withFilters } from "@pixi/react";
-import { useCamera, usePlayers } from "./store";
+import { useState } from "react";
+import {
+  ClinetHeight,
+  ClinetWidth,
+  MobSize,
+  FR_SCALE as scale,
+} from "./constants";
 import { useInput } from "./keyboard";
 import { add, mul, normalize } from "./math";
-import { AdjustmentFilter } from "@pixi/filter-adjustment";
-import { useState } from "react";
-import { ClinetHeight, ClinetWidth, FR_SCALE as scale } from "./constants";
-import "@pixi/events";
+import { useCamera, usePlayers } from "./store";
+import { DebugCollision } from "./debug/collision";
 
 const Filters = withFilters(Container, {
   adjust: AdjustmentFilter,
 });
 
 const filters = {
-  red: { brightness: 1.4, red: 2, blue: 0.5, green: 0.5 },
-  normal: { brightness: 1.2, red: 1, blue: 1, green: 1 },
+  red: { brightness: 1.2, red: 2, blue: 0.5, green: 0.5 },
+  normal: { brightness: 1, red: 1, blue: 1, green: 1 },
 } as const;
 
-const bunnyUrl = "https://pixijs.io/pixi-react/img/bunny.png";
+const bunnyUrl = "/assets/chara.png";
 export function Player({ id }: { id: string }) {
   const input = useInput();
   const [isHurt, setIsHurt] = useState(false);
@@ -47,12 +53,16 @@ export function Player({ id }: { id: string }) {
       <Sprite
         interactive
         image={bunnyUrl}
+        width={MobSize}
+        height={MobSize}
         x={ClinetWidth / 2}
         y={ClinetHeight / 2}
         pointerdown={() => {
           setIsHurt(!isHurt);
         }}
+        anchor={0.5}
       />
+      <DebugCollision x={ClinetWidth / 2} y={ClinetHeight / 2} />
     </Filters>
   );
 }

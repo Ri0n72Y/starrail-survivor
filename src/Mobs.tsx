@@ -1,33 +1,36 @@
-import { Container, Sprite, useTick, withFilters } from "@pixi/react";
-import { useCamera, useEnemies } from "./store";
-import { add, distance, mul, normalize, sub } from "./math";
 import { AdjustmentFilter } from "@pixi/filter-adjustment";
+import { Container, Sprite, useTick, withFilters } from "@pixi/react";
 import { useState } from "react";
-import {
-  FR_SCALE as scale,
-  MOB_MAXIMUM as maximum,
-  ClinetWidth,
-  ClinetHeight,
-} from "./constants";
-import { v4 as uuid } from "uuid";
 import useInterval from "use-interval";
+import { v4 as uuid } from "uuid";
+import {
+  ClinetHeight,
+  ClinetWidth,
+  MobSize,
+  MobSizeHalf,
+  MOB_MAXIMUM as maximum,
+  FR_SCALE as scale,
+} from "./constants";
+import { add, distance, mag, mul, normalize, sub } from "./math";
+import { useCamera, useEnemies } from "./store";
+import { DebugCollision } from "./debug/collision";
 
 const Filters = withFilters(Container, {
   adjust: AdjustmentFilter,
 });
 
 const filters = {
-  red: { brightness: 1, red: 2, blue: 0.5, green: 0.5 },
-  normal: { brightness: 0.8, red: 1, blue: 1, green: 1 },
+  red: { brightness: 1.2, red: 2, blue: 0.5, green: 0.5 },
+  normal: { brightness: 1, red: 1, blue: 1, green: 1 },
 } as const;
 
-const bunnyUrl = "https://pixijs.io/pixi-react/img/bunny.png";
 export function Mobs() {
   const [enemies, add] = useEnemies((state) => [state.hps, state.addEnemies]);
   const [x, y] = useCamera((state) => [state.x, state.y]);
+  // spawn
   useInterval(() => {
     if (Object.keys(enemies).length < maximum) {
-      const sample = { hp: 10, type: "test" };
+      const sample = { hp: 20, type: "test" };
       const res = new Array(maximum - Object.keys(enemies).length)
         .fill(sample)
         .map((s) => {
@@ -72,14 +75,21 @@ function Mob({ id }: { id: string }) {
   const [isHurt, setIsHurt] = useState(false);
   const [x, y] = useCamera((state) => [state.x, state.y]);
   // const players = usePlayers((state) => state.positions);
-  const [hp, pos, type, elites, update, kill, remove] = useEnemies((state) => [
-    state.hps[id],
-    state.positions[id],
-    state.types[id],
-    state.elites,
-    state.updateEnemy,
-    state.killEnemy,
-    state.removeEnemy,
+  const [hp, velocity, pos, type, elites, update, kill, remove] = useEnemies(
+    (state) => [
+      state.hps[id],
+      state.velocitys[id],
+      state.positions[id],
+      state.types[id],
+      state.elites,
+      state.updateEnemy,
+      state.killEnemy,
+      state.removeEnemy,
+    ]
+  );
+  const [hurt, toggleHurt] = useEnemies((state) => [
+    state.hurts[id],
+    state.toggleHurt,
   ]);
   const meta = useEnemies((state) => state.enemyMeta[type]);
   useTick((delta) => {
@@ -87,6 +97,7 @@ function Mob({ id }: { id: string }) {
       kill(id);
       return;
     }
+    // multiplayer support
     // let minDist = Infinity;
     // let targetPos = pos;
     // for (const target of Object.values(players)) {
@@ -102,23 +113,50 @@ function Mob({ id }: { id: string }) {
       remove(id);
       return;
     }
-    if (minDist < 10) {
-      update({ id, hp: 0, position: pos });
+    if (hurt && !isHurt) {
       setIsHurt(true);
+      setTimeout(() => {
+        setIsHurt(false);
+        toggleHurt(id);
+      }, 300);
+    }
+    // hit part
+    if (minDist < MobSizeHalf) {
+      update({ id, position: pos });
       return;
     }
+
+    // update velocity
     const dir = normalize(sub(targetPos, pos));
     const speed = meta.speed * delta * scale;
-    const velocity = mul(dir, speed);
-    update({ id, hp, position: add(pos, velocity) });
+    const velo = mul(dir, speed);
+    const magnitude = mag(velocity);
+    const displacement = magnitude > 0 ? add(velo, velocity) : velo;
+
+    const freeze = minDist < MobSizeHalf;
+
+    // update velocity
+    // TODO: update collision
+    // update position
+    update({
+      id,
+      hp,
+      position: freeze ? pos : add(pos, displacement),
+    });
   });
+  const posX = pos.x - x + ClinetWidth * 0.5;
+  const posY = pos.y - y + ClinetHeight * 0.5;
   return (
     <Filters adjust={isHurt ? filters.red : filters.normal}>
       <Sprite
-        image={bunnyUrl}
-        x={pos.x - x + ClinetWidth * 0.5}
-        y={pos.y - y + ClinetHeight * 0.5}
+        image={"/assets/ren_normal.png"}
+        width={MobSize}
+        height={MobSize}
+        x={posX}
+        y={posY}
+        anchor={0.5}
       />
+      <DebugCollision x={posX} y={posY} color={0xff0000} />
     </Filters>
   );
 }
