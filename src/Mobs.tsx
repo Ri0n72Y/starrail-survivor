@@ -118,13 +118,13 @@ function Mob({ id }: { id: string }) {
       setTimeout(() => {
         setIsHurt(false);
         toggleHurt(id);
-      }, 300);
+      }, 150);
     }
-    // hit part
-    if (minDist < MobSizeHalf) {
-      update({ id, position: pos });
-      return;
-    }
+    // // hit part
+    // if (minDist < MobSizeHalf) {
+    //   update({ id, position: pos });
+    //   return;
+    // }
 
     // update velocity
     const dir = normalize(sub(targetPos, pos));
@@ -133,15 +133,22 @@ function Mob({ id }: { id: string }) {
     const magnitude = mag(velocity);
     const displacement = magnitude > 0 ? add(velo, velocity) : velo;
 
-    const freeze = minDist < MobSizeHalf;
-
     // update velocity
-    // TODO: update collision
+    if (magnitude > 0.02) {
+      update({ id, velocity: mul(velocity, 0.8) });
+    } else if (magnitude < 0.02 && magnitude > 0) {
+      update({ id, velocity: { x: 0, y: 0 } });
+    }
+
+    // TODO: update collision with other mobs
+    let position = add(pos, displacement);
+    if (distance(targetPos, position) < MobSizeHalf) {
+      position = pos;
+    }
     // update position
     update({
       id,
-      hp,
-      position: freeze ? pos : add(pos, displacement),
+      position,
     });
   });
   const posX = pos.x - x + ClinetWidth * 0.5;

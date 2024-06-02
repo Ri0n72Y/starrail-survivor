@@ -29,12 +29,12 @@ export function Extinguisher({ id }: { id: string }) {
     state.updateCooldown,
     state.resetCooldown,
   ]);
-  const [mobPos, hps, debuffs, updateEnemy, hurts, toggleHurt] = useEnemies(
+  const [mobPos, hps, debuffs, updateEnemies, hurts, toggleHurt] = useEnemies(
     (state) => [
       state.positions,
       state.hps,
       state.debuffs,
-      state.updateEnemy,
+      state.updateEnemies,
       state.hurts,
       state.toggleHurt,
     ]
@@ -74,16 +74,16 @@ export function Extinguisher({ id }: { id: string }) {
       }
       return keys;
     }, [] as string[]);
-    effectEnemies.forEach((id) => {
+    const next = effectEnemies.map((id) => {
       const hitback = mul(normalize(sub(mobPos[id], playerPos)), info.strength);
       if (!hurts[id]) toggleHurt(id);
-      updateEnemy({
+      return {
         id,
         hp: hps[id] - info.baseDamage * player.strength,
         velocity: hitback,
-      });
+      };
     });
-    // console.log("extinguisher", effectEnemies);
+    updateEnemies(next);
 
     update("extinguisher", info.baseDelay * player.cooldown);
   });
