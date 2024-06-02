@@ -22,18 +22,17 @@ export function Extinguisher({ id }: { id: string }) {
     state.players[id],
     state.positions[id],
   ]);
-  const [cd, info, level, update, reset] = useWeapons((state) => [
+  const [cd, info, level, update] = useWeapons((state) => [
     state.cooldown["extinguisher"],
     state.meta["extinguisher"],
     state.levels["extinguisher"],
     state.updateCooldown,
-    state.resetCooldown,
+    // state.resetCooldown,
   ]);
-  const [mobPos, hps, debuffs, updateEnemies, hurts, toggleHurt] = useEnemies(
+  const [mobPos, hps, updateEnemies, hurts, toggleHurt] = useEnemies(
     (state) => [
       state.positions,
       state.hps,
-      state.debuffs,
       state.updateEnemies,
       state.hurts,
       state.toggleHurt,
