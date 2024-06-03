@@ -1,6 +1,10 @@
 import { create } from "zustand";
 
-export type WeaponType = "extinguisher" | "arrow";
+export type WeaponType =
+  | "extinguisher"
+  | "arrow"
+  | "thunder"
+  | NonNullable<string>;
 
 interface Weapon {
   id: WeaponType;
@@ -11,24 +15,9 @@ interface Weapon {
   strength: number;
 }
 
-const extinguisher: Weapon = {
-  id: "extinguisher",
-  baseDamage: 10,
-  baseDelay: 1000,
-  strength: 5,
-};
-
-const arrow: Weapon = {
-  id: "arrow",
-  baseDamage: 5,
-  baseDelay: 1000,
-  strength: 10,
-};
-
-const meta = { extinguisher, arrow };
-
 interface WeaponsActivation {
   meta: Record<WeaponType, Weapon>;
+  loadWeapon: () => Promise<void>;
   levels: Record<WeaponType, number>;
   upgrade: (weapon: WeaponType) => void;
   /** @description cooldown in ms */
@@ -38,9 +27,26 @@ interface WeaponsActivation {
 }
 
 export const useWeapons = create<WeaponsActivation>()((set) => ({
-  meta,
-  levels: { extinguisher: 1, arrow: 0 },
-  cooldown: { extinguisher: 0, arrow: 0 },
+  meta: {},
+  levels: {},
+  cooldown: {},
+  loadWeapon: async () => {
+    try {
+      const text = await fetch("/data/weapons.json");
+      const json = (await text.json()) as Weapon[];
+      const meta = {} as Record<WeaponType, Weapon>;
+      const levels = {} as Record<WeaponType, number>;
+      const cooldown = {} as Record<WeaponType, number>;
+      json.forEach((weapon) => {
+        meta[weapon.id] = weapon;
+        levels[weapon.id] = 0;
+        cooldown[weapon.id] = 0;
+      });
+      set({ meta, levels, cooldown });
+    } catch (error) {
+      console.log(error);
+    }
+  },
   updateCooldown: (weapon, time) => {
     set((weapons) => ({
       ...weapons,

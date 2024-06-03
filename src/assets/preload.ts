@@ -1,6 +1,8 @@
 import dayjs from "dayjs";
-import { Assets } from "pixi.js";
 import duration from "dayjs/plugin/duration";
+import { Assets } from "pixi.js";
+import { useEnemies, usePlayers } from "../store";
+import { useWeapons } from "../weapons/useWeapons";
 
 export async function preload() {
   dayjs.extend(duration);
@@ -21,4 +23,8 @@ export async function preload() {
   }
   Assets.backgroundLoad(aliases);
   aliases.forEach((v) => Assets.load(v));
+
+  await useWeapons.getState().loadWeapon();
+  await useEnemies.getState().loadEnemyMeta();
+  await usePlayers.getState().loadCharacters();
 }

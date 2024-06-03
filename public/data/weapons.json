@@ -1,0 +1,14 @@
+[
+  {
+    "id": "extinguisher",
+    "baseDamage": 10,
+    "baseDelay": 1000,
+    "strength": 5
+  },
+  {
+    "id": "thunder",
+    "baseDamage": 20,
+    "baseDelay": 2000,
+    "strength": 5
+  }
+]

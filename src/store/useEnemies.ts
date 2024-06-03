@@ -15,7 +15,7 @@ interface EnemyType {
 interface EnemyUpdate {
   id: string;
   hp?: number;
-  velocity?: { x: number; y: number };
+  extraVelocity?: { x: number; y: number };
   position?: { x: number; y: number };
   debuffs?: DebuffType[];
 }
@@ -24,13 +24,13 @@ interface EnemyCreate extends EnemyUpdate {
 }
 interface Enemies {
   enemyMeta: Record<string, EnemyType>;
-  loadEnemyMeta: () => void;
+  loadEnemyMeta: () => Promise<void>;
   hps: Record<string, number>;
   hurts: Record<string, boolean>;
   toggleHurt: (id: string) => void;
   /** @description mob type key of metadata */
   types: Record<string, string>;
-  velocitys: Record<string, { x: number; y: number }>;
+  extraVelocities: Record<string, { x: number; y: number }>;
   positions: Record<string, { x: number; y: number }>;
   debuffs: Record<string, DebuffType[]>;
   elites: string[];
@@ -42,18 +42,16 @@ interface Enemies {
 }
 
 export const useEnemies = create<Enemies>()((set, get) => ({
-  enemyMeta: {
-    test: {
-      id: "test",
-      name: "Test Mob",
-      hp: 10,
-      speed: 4,
-      damege: 5,
-      move: "player",
-      exp: 1,
-    },
+  enemyMeta: {},
+  loadEnemyMeta: async () => {
+    try {
+      const text = await fetch("/data/enemies.json");
+      const json = (await text.json()) as EnemyType[];
+      set({ enemyMeta: Object.fromEntries(json.map((v) => [v.id, v])) });
+    } catch (error) {
+      console.log(error);
+    }
   },
-  loadEnemyMeta: () => {},
   hps: {},
   hurts: {},
   toggleHurt: (id) => {
@@ -63,7 +61,7 @@ export const useEnemies = create<Enemies>()((set, get) => ({
   },
   debuffs: {},
   types: {},
-  velocitys: {},
+  extraVelocities: {},
   positions: {},
   elites: [],
   addEnemies: (enemies) => {
@@ -85,16 +83,16 @@ export const useEnemies = create<Enemies>()((set, get) => ({
       hps: { ...get().hps, ...newHps },
       hurts: { ...get().hurts, ...newHurts },
       debuffs: { ...get().debuffs, ...debuffs },
-      velocitys: { ...get().velocitys, ...newVelocitys },
+      extraVelocities: { ...get().extraVelocities, ...newVelocitys },
       positions: { ...get().positions, ...newPositions },
       types: { ...get().types, ...newTypes },
     });
   },
-  updateEnemy: ({ id, hp, velocity, position, debuffs }) => {
+  updateEnemy: ({ id, hp, extraVelocity: velocity, position, debuffs }) => {
     const rest = {
       ...(hp !== undefined ? { hps: { ...get().hps, [id]: hp } } : {}),
       ...(velocity
-        ? { velocitys: { ...get().velocitys, [id]: velocity } }
+        ? { velocitys: { ...get().extraVelocities, [id]: velocity } }
         : {}),
       ...(position
         ? { positions: { ...get().positions, [id]: position } }
@@ -110,26 +108,27 @@ export const useEnemies = create<Enemies>()((set, get) => ({
     const debuffs: Record<string, DebuffType[]> = {};
     enemies.forEach((enemy) => {
       newHps[enemy.id] = enemy.hp ?? get().hps[enemy.id];
-      newVelocitys[enemy.id] = enemy.velocity ?? get().velocitys[enemy.id];
+      newVelocitys[enemy.id] =
+        enemy.extraVelocity ?? get().extraVelocities[enemy.id];
       newPositions[enemy.id] = enemy.position ?? get().positions[enemy.id];
       debuffs[enemy.id] = enemy.debuffs ?? get().debuffs[enemy.id];
     });
     set({
       hps: { ...get().hps, ...newHps },
       debuffs: { ...get().debuffs, ...debuffs },
-      velocitys: { ...get().velocitys, ...newVelocitys },
+      extraVelocities: { ...get().extraVelocities, ...newVelocitys },
       positions: { ...get().positions, ...newPositions },
     });
   },
   killEnemy: (id) => {
     delete get().hps[id];
-    delete get().velocitys[id];
+    delete get().extraVelocities[id];
     delete get().positions[id];
     delete get().types[id];
   },
   removeEnemy: (id) => {
     delete get().hps[id];
-    delete get().velocitys[id];
+    delete get().extraVelocities[id];
     delete get().positions[id];
     delete get().types[id];
   },

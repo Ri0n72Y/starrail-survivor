@@ -19,28 +19,18 @@ const App = () => {
     state.removePlayer,
   ]);
   const gameover = useGame((state) => state.gameover);
-  useEffect(() => {
-    const star = {
-      id: "star",
-      name: "Star",
-      maxHp: 50,
-
-      speed: 12,
-      hp: 50,
-      score: 0,
-      strength: 1,
-      cooldown: 1,
-      speedScale: 1,
-      pos: { x: 0, y: 0 },
-    };
-    addPlayer(star);
-    return () => removePlayer("star");
-  }, [addPlayer, removePlayer]);
-
   const [loaded, setLoaded] = useState(false);
   useEffect(() => {
     preload().then(() => setLoaded(true));
+    return () => setLoaded(false);
   }, []);
+  useEffect(() => {
+    if (loaded) {
+      addPlayer({ charactorId: "star" });
+      return () => removePlayer("star");
+    }
+  }, [addPlayer, loaded, removePlayer]);
+
   return (
     <>
       {!loaded && <div>Loading...</div>}
