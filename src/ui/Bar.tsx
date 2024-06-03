@@ -14,13 +14,14 @@ export function Bar(props: Props) {
   const draw = useCallback(
     (g: PixiGraphics) => {
       g.clear();
-      g.lineStyle(1, 0x000000, 1);
       g.beginFill(0xd1d1d1);
-      g.drawRoundedRect(-25, 0, 50, 6, 4);
+      g.drawRoundedRect(-25, 0, 50, 7, 4);
       g.beginFill(props.color);
       g.lineStyle();
-      g.drawRoundedRect(-25, 1, (props.current / props.max) * 50, 5, 4);
+      g.drawRoundedRect(-25, 0, (props.current / props.max) * 50, 7, 4);
       g.endFill();
+      g.lineStyle(1, 0x000000, 1);
+      g.drawRoundedRect(-25, 0, 50, 7, 4);
     },
     [props]
   );

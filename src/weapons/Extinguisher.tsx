@@ -44,7 +44,7 @@ export function Extinguisher({ id }: { id: string }) {
       const scale = getScale(level);
       g.clear();
       g.lineStyle(area * scale, e.iceBlue, Math.sin(cd / 1000) * 0.8 + 0.2);
-      g.drawCircle(0, 0, baseRadius * scale);
+      g.drawCircle(0, 0, baseRadius);
     },
     [cd, level]
   );
@@ -61,8 +61,8 @@ export function Extinguisher({ id }: { id: string }) {
         isRingIntersectingCircle(
           {
             ...playerPos,
-            radiusIn: (baseRadius - baseArea) * scale,
-            radiusOut: (baseRadius + baseArea) * scale,
+            radiusIn: baseRadius - baseArea * scale,
+            radiusOut: baseRadius + baseArea * scale,
           },
           {
             ...pos,

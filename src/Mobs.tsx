@@ -12,7 +12,13 @@ import {
   FR_SCALE as scale,
 } from "./constants";
 import { add, distance, mag, mul, normalize, sub } from "./math";
-import { useCamera, useEnemies, useScore, usePlayerHurt } from "./store";
+import {
+  useCamera,
+  useEnemies,
+  useScore,
+  usePlayerHurt,
+  usePlayers,
+} from "./store";
 import { DebugCollision } from "./debug/collision";
 import { useDifficulty } from "./store/useDifficulty";
 
@@ -80,14 +86,15 @@ export function Mobs() {
 function Mob({ id }: { id: string }) {
   const [isHurt, setIsHurt] = useState(false);
   const [x, y] = useCamera((state) => [state.x, state.y]);
-  const [player, setHurt] = usePlayerHurt((state) => [
-    state["star"], // TODO: remove hard value
+  const [players] = usePlayers((state) => [state.positions]);
+  const [hurts, setHurt] = usePlayerHurt((state) => [
+    state, // TODO: remove hard value
     state.setHurt,
   ]);
   const [hp, velocity, pos, type, elites, update, kill, remove, info] =
     useEnemies((state) => [
       state.hps[id],
-      state.velocitys[id],
+      state.extraVelocities[id],
       state.positions[id],
       state.types[id],
       state.elites,
@@ -110,17 +117,18 @@ function Mob({ id }: { id: string }) {
       return;
     }
     // multiplayer support
-    // let minDist = Infinity;
-    // let targetPos = pos;
-    // for (const target of Object.values(players)) {
-    //   const dist = distance(pos, target);
-    //   if (dist < minDist) {
-    //     minDist = dist;
-    //     targetPos = target;
-    //   }
-    // }
-    const targetPos = { x, y };
-    const minDist = distance(pos, targetPos);
+    let minDist = Infinity;
+    let targetPos = pos;
+    let player = "";
+    for (const id of Object.keys(players)) {
+      const target = players[id];
+      const dist = distance(pos, target);
+      if (dist < minDist) {
+        minDist = dist;
+        targetPos = target;
+        player = id;
+      }
+    }
     if (minDist > 500 && !elites.includes(id)) {
       remove(id);
       return;
@@ -134,8 +142,8 @@ function Mob({ id }: { id: string }) {
     }
     // hit part
     if (minDist < MobSizeHalf) {
-      if (!player) {
-        setHurt("star", info[type].damege);
+      if (!hurts[player]) {
+        setHurt(player, info[type].damege);
       }
     }
 
@@ -148,14 +156,14 @@ function Mob({ id }: { id: string }) {
 
     // update velocity
     if (magnitude > 0.02) {
-      update({ id, velocity: mul(velocity, 0.8) });
+      update({ id, extraVelocity: mul(velocity, 0.8) });
     } else if (magnitude < 0.02 && magnitude > 0) {
-      update({ id, velocity: { x: 0, y: 0 } });
+      update({ id, extraVelocity: { x: 0, y: 0 } });
     }
 
     // TODO: update collision with other mobs
     let position = add(pos, displacement);
-    if (distance(targetPos, position) < MobSizeHalf) {
+    if (distance(targetPos, position) < MobSizeHalf - 5) {
       position = pos;
     }
     // update position

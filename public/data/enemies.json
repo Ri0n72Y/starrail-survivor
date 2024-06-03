@@ -4,7 +4,7 @@
     "name": "Test Mob",
     "hp": 10,
     "speed": 5,
-    "damege": 1,
+    "damege": 5,
     "move": "player",
     "exp": 1
   }

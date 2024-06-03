@@ -33,6 +33,7 @@ export function Player({ id }: { id: string }) {
     state.setPosition,
     state.updatePlayerHp,
   ]);
+  const [info] = usePlayers((state) => [state.characters[player.charactorId]]);
   const [hurt, setHurt] = usePlayerHurt((state) => [state[id], state.setHurt]);
   const [setX, setY] = useCamera((state) => [state.setX, state.setY]);
   const endgame = useGame((state) => state.setGameover);
@@ -44,13 +45,14 @@ export function Player({ id }: { id: string }) {
     if (input.moveRight) x += 1;
     if (input.moveUp) y -= 1;
     if (input.moveDown) y += 1;
-    if (x === 0 && y === 0) return;
-    const dir = normalize({ x, y });
-    const speed = player.speed * delta * scale;
-    const velocity = mul(dir, speed);
-    setPos(id, add(pos, velocity));
-    setX(pos.x - velocity.x);
-    setY(pos.y - velocity.y);
+    if (x !== 0 || y !== 0) {
+      const dir = normalize({ x, y });
+      const speed = info.speed * delta * scale;
+      const velocity = mul(dir, speed);
+      setPos(id, add(pos, velocity));
+      setX(pos.x - velocity.x);
+      setY(pos.y - velocity.y);
+    }
 
     // hurt
     if (hurt && !isHurt) {
@@ -59,7 +61,6 @@ export function Player({ id }: { id: string }) {
       setTimeout(() => {
         setIsHurt(false);
         setHurt(id, 0);
-        console.log(player.hp);
       }, 300);
     }
 
@@ -84,7 +85,7 @@ export function Player({ id }: { id: string }) {
       <Bar
         x={ClinetWidth / 2}
         y={ClinetHeight / 2 + 30}
-        max={player.maxHp}
+        max={info.hp * player.maxHpScale}
         current={player.hp}
         color={0xff0000}
       />
