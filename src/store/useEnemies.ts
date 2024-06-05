@@ -10,6 +10,7 @@ interface EnemyType {
   damege: number;
   exp: number;
   move: "player" | "random" | "static";
+  image: string;
   direction?: { x: number; y: number };
 }
 interface EnemyUpdate {

@@ -42,7 +42,7 @@ export function Mobs() {
       const baseHp = Math.round(score / 50);
       const sample = {
         hp: baseHp * 6 + Math.round(Math.random() * baseHp * 4),
-        type: "test",
+        type: "stone",
       };
       const res = new Array(maximum - Object.keys(enemies).length)
         .fill(sample)
@@ -178,7 +178,7 @@ function Mob({ id }: { id: string }) {
   return (
     <Filters adjust={isHurt ? filters.red : filters.normal}>
       <Sprite
-        image={"/assets/ren_normal.png"}
+        image={`/assets/${info[type].image}`}
         width={MobSize}
         height={MobSize}
         x={posX}

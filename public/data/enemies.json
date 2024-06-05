@@ -1,11 +1,12 @@
 [
   {
-    "id": "test",
-    "name": "Test Mob",
+    "id": "stone",
+    "name": "Stone",
     "hp": 10,
-    "speed": 5,
-    "damege": 5,
+    "speed": 4,
+    "damege": 2,
     "move": "player",
-    "exp": 1
+    "exp": 1,
+    "image": "enemy2.png"
   }
 ]

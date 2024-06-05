@@ -86,7 +86,7 @@ interface Props {
   damage: number;
   onEnd: () => void;
 }
-const animationDuration = 300 as const;
+const animationDuration = 200 as const;
 function ThunderProjectile({ id, playerId, targets, damage, onEnd }: Props) {
   const playerPos = usePlayers((state) => state.positions[playerId]);
   const [enemies, positions, update] = useEnemies((state) => [
