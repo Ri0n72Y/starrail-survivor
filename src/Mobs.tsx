@@ -8,18 +8,19 @@ import {
   ClinetWidth,
   MobSize,
   MobSizeHalf,
+  PlayerMinDistace,
   MOB_MAXIMUM as maximum,
   FR_SCALE as scale,
 } from "./constants";
+import { DebugCollision } from "./debug/collision";
 import { add, distance, mag, mul, normalize, sub } from "./math";
 import {
   useCamera,
   useEnemies,
-  useScore,
   usePlayerHurt,
   usePlayers,
+  useScore,
 } from "./store";
-import { DebugCollision } from "./debug/collision";
 import { useDifficulty } from "./store/useDifficulty";
 
 const Filters = withFilters(Container, {
@@ -163,7 +164,7 @@ function Mob({ id }: { id: string }) {
 
     // TODO: update collision with other mobs
     let position = add(pos, displacement);
-    if (distance(targetPos, position) < MobSizeHalf - 5) {
+    if (distance(targetPos, position) < MobSizeHalf + PlayerMinDistace) {
       position = pos;
     }
     // update position

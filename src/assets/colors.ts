@@ -8,6 +8,15 @@ const elements = {
   physics: "#D1D1D1",
 };
 
+const weapons = {
+  thunder: {
+    a: 0xe685fc,
+    b: 0xac55ff,
+    g: 0x30316a,
+  },
+};
+
 export const colors = {
   elements,
+  weapons,
 };

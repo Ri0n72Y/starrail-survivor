@@ -22,11 +22,11 @@ interface WeaponsActivation {
   upgrade: (weapon: WeaponType) => void;
   /** @description cooldown in ms */
   cooldown: Record<WeaponType, number>;
-  updateCooldown: (weapon: WeaponType, time: number) => void;
-  resetCooldown: (weapon: WeaponType) => void;
+  updateCooldown: (delta: number) => void;
+  setCooldown: (weapon: WeaponType, value: number) => void;
 }
 
-export const useWeapons = create<WeaponsActivation>()((set) => ({
+export const useWeapons = create<WeaponsActivation>()((set, get) => ({
   meta: {},
   levels: {},
   cooldown: {},
@@ -47,16 +47,18 @@ export const useWeapons = create<WeaponsActivation>()((set) => ({
       console.log(error);
     }
   },
-  updateCooldown: (weapon, time) => {
-    set((weapons) => ({
-      ...weapons,
-      cooldown: { ...weapons.cooldown, [weapon]: time },
-    }));
+  updateCooldown: (delta) => {
+    const keys = Object.keys(get().cooldown);
+    const cooldown = {} as Record<WeaponType, number>;
+    keys.forEach((key) => {
+      cooldown[key] =
+        get().cooldown[key] > 0 ? Math.max(get().cooldown[key] - delta, 0) : 0;
+    });
+    set({ cooldown });
   },
-  resetCooldown: (weapon) => {
+  setCooldown: (weapon, value) => {
     set((weapons) => ({
-      ...weapons,
-      cooldown: { ...weapons.cooldown, [weapon]: 0 },
+      cooldown: { ...weapons.cooldown, [weapon]: value },
     }));
   },
   upgrade: (weapon) => {

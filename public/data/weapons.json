@@ -8,7 +8,7 @@
   {
     "id": "thunder",
     "baseDamage": 20,
-    "baseDelay": 2000,
+    "baseDelay": 1000,
     "strength": 5
   }
 ]
