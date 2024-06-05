@@ -64,7 +64,7 @@ export function Player({ id }: { id: string }) {
       }, 300);
     }
 
-    // gameover
+    // gameover;
     if (player.hp <= 0) {
       ticker.stop();
       endgame(true);

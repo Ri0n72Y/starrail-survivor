@@ -7,15 +7,10 @@ import { useEffect } from "react";
 
 export function Score() {
   const score = useScore((state) => state.score);
-  const [level, upgrade] = useWeapons((state) => [
-    state.levels["extinguisher"],
-    state.upgrade,
-  ]);
+  const [upgrade] = useWeapons((state) => [state.upgrade]);
   useEffect(() => {
-    if (Math.floor(score / 100) > level) {
-      upgrade("extinguisher");
-    }
-  }, [level, score, upgrade]);
+    upgrade("thunder");
+  }, [upgrade]);
   return (
     <Text
       text={`Score: ${score}`}

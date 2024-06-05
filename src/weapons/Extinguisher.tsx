@@ -17,17 +17,16 @@ const area = 10 as const;
 
 const getScale = (level: number) => 1 + (level - 1) * 0.2;
 
-export function Extinguisher({ id }: { id: string }) {
+export function Extinguisher({ playerId }: { playerId: string }) {
   const [player, playerPos] = usePlayers((state) => [
-    state.players[id],
-    state.positions[id],
+    state.players[playerId],
+    state.positions[playerId],
   ]);
   const [cd, info, level, update] = useWeapons((state) => [
     state.cooldown["extinguisher"],
     state.meta["extinguisher"],
     state.levels["extinguisher"],
-    state.updateCooldown,
-    // state.resetCooldown,
+    state.setCooldown,
   ]);
   const [mobPos, hps, updateEnemies, hurts, toggleHurt] = useEnemies(
     (state) => [
@@ -48,11 +47,8 @@ export function Extinguisher({ id }: { id: string }) {
     },
     [cd, level]
   );
-  useTick((_, ticker) => {
-    if (cd > 0) {
-      update("extinguisher", cd - ticker.deltaMS);
-      return;
-    }
+  useTick(() => {
+    if (cd > 0) return;
     // hit collited enemies
     const effectEnemies = Object.keys(mobPos).reduce((keys, key) => {
       const pos = mobPos[key];
@@ -74,6 +70,7 @@ export function Extinguisher({ id }: { id: string }) {
       }
       return keys;
     }, [] as string[]);
+
     const next = effectEnemies.map((id) => {
       const hitback = mul(normalize(sub(mobPos[id], playerPos)), info.strength);
       if (!hurts[id]) toggleHurt(id);
@@ -81,7 +78,7 @@ export function Extinguisher({ id }: { id: string }) {
       return {
         id,
         hp: hps[id] - info.baseDamage * player.strength * scale,
-        velocity: hitback,
+        extraVelocity: hitback,
       };
     });
     updateEnemies(next);

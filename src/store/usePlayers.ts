@@ -19,6 +19,7 @@ interface Player {
   strength: number;
   cooldown: number;
   speedScale: number;
+  extraProjectiles: number;
 }
 
 interface Players {
@@ -57,7 +58,6 @@ export const usePlayers = create<Players>()((set, get) => ({
   addPlayer: ({ charactorId, pos }) => {
     const id = v4();
     const character = get().characters[charactorId];
-    console.log(character);
     set((state) => ({
       players: {
         ...state.players,
@@ -71,6 +71,7 @@ export const usePlayers = create<Players>()((set, get) => ({
           strength: 1,
           cooldown: 1,
           speedScale: 1,
+          extraProjectiles: 0,
         },
       },
       positions: {

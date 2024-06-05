@@ -1,4 +1,4 @@
-type vec2 = { x: number; y: number };
+export type vec2 = { x: number; y: number };
 
 export function normalize(vec: vec2): vec2 {
   const length = Math.sqrt(vec.x * vec.x + vec.y * vec.y);
@@ -23,6 +23,18 @@ export function mul(vec: vec2, scale: number): vec2 {
 
 export function distance(vec1: vec2, vec2: vec2): number {
   return Math.sqrt((vec1.x - vec2.x) ** 2 + (vec1.y - vec2.y) ** 2);
+}
+
+export function closestNPoints(point: vec2, points: vec2[], n: number): vec2[] {
+  return points
+    .map((p) => ({ point: p, distance: distance(point, p) }))
+    .sort((a, b) => a.distance - b.distance)
+    .slice(0, n)
+    .map((p) => p.point);
+}
+
+export function orthogonal(vec: vec2): vec2 {
+  return { x: -vec.y, y: vec.x };
 }
 
 export function isRectIntersectingCircle(

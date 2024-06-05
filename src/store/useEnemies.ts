@@ -125,11 +125,15 @@ export const useEnemies = create<Enemies>()((set, get) => ({
     delete get().extraVelocities[id];
     delete get().positions[id];
     delete get().types[id];
+    delete get().debuffs[id];
+    delete get().hurts[id];
   },
   removeEnemy: (id) => {
     delete get().hps[id];
     delete get().extraVelocities[id];
     delete get().positions[id];
     delete get().types[id];
+    delete get().debuffs[id];
+    delete get().hurts[id];
   },
 }));
