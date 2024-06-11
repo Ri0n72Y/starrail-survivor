@@ -1,7 +1,7 @@
 import "./App.css";
 
-import { Stage, Container, Text } from "@pixi/react";
-import { KeyboardInput, useKeyState } from "./keyboard";
+import { Stage } from "@pixi/react";
+import { KeyboardInput } from "./keyboard";
 import { Fragment, useEffect, useState } from "react";
 import { useGame, usePlayers } from "./store";
 import { Player } from "./Player";
@@ -12,13 +12,17 @@ import { preload } from "./assets/preload";
 import { Background } from "./Background";
 import { UI } from "./ui";
 import styled from "styled-components";
+import { ExpSystem } from "./items/exp";
 
 const App = () => {
   const [addPlayer, removePlayer] = usePlayers((state) => [
     state.addPlayer,
     state.removePlayer,
   ]);
-  const gameover = useGame((state) => state.gameover);
+  const [paused, gameover] = useGame((state) => [
+    state.isGamePaused,
+    state.gameover,
+  ]);
   const [loaded, setLoaded] = useState(false);
   useEffect(() => {
     preload().then(() => setLoaded(true));
@@ -35,13 +39,14 @@ const App = () => {
     <>
       {!loaded && <div>Loading...</div>}
       {loaded && <Canvas />}
+      {paused && <Mask>Paused</Mask>}
       {gameover && (
-        <GameOver>
+        <Mask>
           Game Over
           <div style={{ fontSize: 24, fontWeight: 400 }}>
             Refresh to play again
           </div>
-        </GameOver>
+        </Mask>
       )}
     </>
   );
@@ -49,14 +54,6 @@ const App = () => {
 
 function Canvas() {
   const players = usePlayers((state) => state.players);
-  const keys = useKeyState((state) =>
-    Object.keys(state.keyState).reduce((acc, key) => {
-      if (state.keyState[key]) {
-        acc.push(key);
-      }
-      return acc;
-    }, [] as string[])
-  );
   return (
     <>
       <Stage
@@ -74,10 +71,7 @@ function Canvas() {
           </Fragment>
         ))}
 
-        <Container x={200} y={200}>
-          <Text text={keys.join(", ")} anchor={0.5} x={220} y={150} />
-        </Container>
-
+        <ExpSystem />
         <UI />
       </Stage>
       <KeyboardInput />
@@ -85,7 +79,7 @@ function Canvas() {
   );
 }
 
-const GameOver = styled.div`
+const Mask = styled.div`
   position: fixed;
   top: 0;
   left: 0;

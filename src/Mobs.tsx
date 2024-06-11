@@ -6,6 +6,7 @@ import { v4 as uuid } from "uuid";
 import {
   ClinetHeight,
   ClinetWidth,
+  MaxDistance,
   MobSize,
   MobSizeHalf,
   PlayerMinDistace,
@@ -14,13 +15,7 @@ import {
 } from "./constants";
 import { DebugCollision } from "./debug/collision";
 import { add, distance, mag, mul, normalize, sub } from "./math";
-import {
-  useCamera,
-  useEnemies,
-  usePlayerHurt,
-  usePlayers,
-  useScore,
-} from "./store";
+import { useCamera, useEnemies, usePlayerHurt, usePlayers } from "./store";
 import { useDifficulty } from "./store/useDifficulty";
 
 const Filters = withFilters(Container, {
@@ -34,12 +29,13 @@ const filters = {
 
 export function Mobs() {
   const [enemies, add] = useEnemies((state) => [state.hps, state.addEnemies]);
+  // TODO: test spawn only stone enemy
+  const info = useEnemies((state) => state.enemyMeta["stone"]);
   const [x, y] = useCamera((state) => [state.x, state.y]);
-  const score = useScore((state) => state.score);
   // spawn
   useInterval(() => {
     if (Object.keys(enemies).length < maximum) {
-      const baseHp = Math.round(score / 50);
+      const baseHp = info.hp;
       const sample = {
         hp: baseHp * 6 + Math.round(Math.random() * baseHp * 4),
         type: "stone",
@@ -92,8 +88,8 @@ function Mob({ id }: { id: string }) {
     state, // TODO: remove hard value
     state.setHurt,
   ]);
-  const [hp, velocity, pos, type, elites, update, kill, remove, info] =
-    useEnemies((state) => [
+  const [hp, velocity, pos, type, elites, update, kill, remove] = useEnemies(
+    (state) => [
       state.hps[id],
       state.extraVelocities[id],
       state.positions[id],
@@ -102,19 +98,18 @@ function Mob({ id }: { id: string }) {
       state.updateEnemy,
       state.killEnemy,
       state.removeEnemy,
-      state.enemyMeta,
-    ]);
+    ]
+  );
   const [hurt, toggleHurt] = useEnemies((state) => [
     state.hurts[id],
     state.toggleHurt,
   ]);
-  const setScore = useScore((state) => state.setScore);
   const speedScale = useDifficulty((state) => state.speed);
   const meta = useEnemies((state) => state.enemyMeta[type]);
   useTick((delta) => {
+    // kill mobs
     if (hp <= 0) {
       kill(id);
-      setScore((s) => s + 5);
       return;
     }
     // multiplayer support
@@ -130,7 +125,7 @@ function Mob({ id }: { id: string }) {
         player = id;
       }
     }
-    if (minDist > 500 && !elites.includes(id)) {
+    if (minDist > MaxDistance && !elites.includes(id)) {
       remove(id);
       return;
     }
@@ -144,7 +139,7 @@ function Mob({ id }: { id: string }) {
     // hit part
     if (minDist < MobSizeHalf) {
       if (!hurts[player]) {
-        setHurt(player, info[type].damege);
+        setHurt(player, meta.damege);
       }
     }
 
@@ -178,7 +173,7 @@ function Mob({ id }: { id: string }) {
   return (
     <Filters adjust={isHurt ? filters.red : filters.normal}>
       <Sprite
-        image={`/assets/${info[type].image}`}
+        image={`/assets/${meta.image}`}
         width={MobSize}
         height={MobSize}
         x={posX}

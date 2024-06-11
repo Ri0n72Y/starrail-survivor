@@ -15,7 +15,7 @@ const Filters = withFilters(Container, {
 
 const counts = [3, 3, 3, 5, 5, 5, 5, 7];
 const damage = [4, 8, 12, 12, 16, 20, 24, 24];
-const maxDistance = 200 as const;
+const maxDistance = 400 as const;
 
 export function Thunder({ playerId }: { playerId: string }) {
   const [player, playerPos] = usePlayers((state) => [
@@ -143,7 +143,6 @@ function ThunderProjectile({ id, playerId, targets, damage, onEnd }: Props) {
 
     // end
     if (damageIndex >= targets.length) {
-      console.log("end");
       setLink([]);
       onEnd();
     }
@@ -164,8 +163,8 @@ function ThunderProjectile({ id, playerId, targets, damage, onEnd }: Props) {
   );
 }
 
-const randomScope = 10 as const;
-const segmentLength = 20 as const;
+const randomScope = 20 as const;
+const segmentLength = 40 as const;
 
 const color = colors.weapons.thunder;
 interface LightningProps {
@@ -185,7 +184,7 @@ function ThunderProjectileDraw({ startX, startY, endX, endY }: LightningProps) {
         randomScope
       );
       g.clear();
-      g.lineStyle(2, color.a, 1);
+      g.lineStyle(4, color.a, 1);
       g.moveTo(line1[0].x, line1[0].y);
       line1.forEach((point) => g.lineTo(point.x, point.y));
       const line2 = getLightningPoints(
@@ -194,7 +193,7 @@ function ThunderProjectileDraw({ startX, startY, endX, endY }: LightningProps) {
         segmentLength,
         randomScope
       );
-      g.lineStyle(3, color.b, 0.8);
+      g.lineStyle(6, color.b, 0.8);
       g.moveTo(line2[0].x, line2[0].y);
       line2.forEach((point) => g.lineTo(point.x, point.y));
     },

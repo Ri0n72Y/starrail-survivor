@@ -27,8 +27,9 @@ const bunnyUrl = "/assets/chara.png";
 export function Player({ id }: { id: string }) {
   const input = useInput();
   const [isHurt, setIsHurt] = useState(false);
-  const [player, pos, setPos, updateHp] = usePlayers((state) => [
+  const [player, playerHp, pos, setPos, updateHp] = usePlayers((state) => [
     state.players[id],
+    state.playerHp[id],
     state.positions[id],
     state.setPosition,
     state.updatePlayerHp,
@@ -36,7 +37,11 @@ export function Player({ id }: { id: string }) {
   const [info] = usePlayers((state) => [state.characters[player.charactorId]]);
   const [hurt, setHurt] = usePlayerHurt((state) => [state[id], state.setHurt]);
   const [setX, setY] = useCamera((state) => [state.setX, state.setY]);
-  const endgame = useGame((state) => state.setGameover);
+  const [paused, setPaused, endgame] = useGame((state) => [
+    state.isGamePaused,
+    state.setIsGamePaused,
+    state.setGameover,
+  ]);
   useTick((delta, ticker) => {
     // position
     let x = 0;
@@ -54,10 +59,26 @@ export function Player({ id }: { id: string }) {
       setY(pos.y - velocity.y);
     }
 
+    // pause
+    if (!input.pause && paused) {
+      setPaused(false);
+    }
+    if (input.pause && !paused) {
+      setPaused(true);
+      ticker.stop();
+      const restart = (e: KeyboardEvent) => {
+        if (e.key === "Escape") {
+          ticker.start();
+        }
+        window.removeEventListener("keydown", restart);
+      };
+      window.addEventListener("keydown", restart);
+    }
+
     // hurt
     if (hurt && !isHurt) {
       setIsHurt(true);
-      updateHp(id, player.hp - (hurt as unknown as number));
+      updateHp([id], [playerHp - (hurt as unknown as number)]);
       setTimeout(() => {
         setIsHurt(false);
         setHurt(id, 0);
@@ -65,7 +86,7 @@ export function Player({ id }: { id: string }) {
     }
 
     // gameover;
-    if (player.hp <= 0) {
+    if (playerHp <= 0) {
       ticker.stop();
       endgame(true);
     }
@@ -84,9 +105,9 @@ export function Player({ id }: { id: string }) {
       />
       <Bar
         x={ClinetWidth / 2}
-        y={ClinetHeight / 2 + 30}
+        y={ClinetHeight / 2 + 55}
         max={info.hp * player.maxHpScale}
-        current={player.hp}
+        current={playerHp}
         color={0xff0000}
       />
       <DebugCollision x={ClinetWidth / 2} y={ClinetHeight / 2} />

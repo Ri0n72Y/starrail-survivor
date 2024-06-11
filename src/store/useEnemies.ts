@@ -1,4 +1,5 @@
 import { create } from "zustand";
+import { useExp } from "./useExp";
 
 export type DebuffType = "slow" | "freeze" | "burn";
 
@@ -124,10 +125,14 @@ export const useEnemies = create<Enemies>()((set, get) => ({
   killEnemy: (id) => {
     delete get().hps[id];
     delete get().extraVelocities[id];
+    const pos = get().positions[id];
     delete get().positions[id];
+    const info = get().enemyMeta[get().types[id]];
     delete get().types[id];
     delete get().debuffs[id];
     delete get().hurts[id];
+
+    if (info && pos) useExp.getState().addDrop(info.exp, pos);
   },
   removeEnemy: (id) => {
     delete get().hps[id];

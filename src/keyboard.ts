@@ -54,8 +54,9 @@ interface KeyState {
 }
 export const useKeyState = create<KeyState>()((set) => ({
   keyState: {},
-  setKeyState: (key: string, value: boolean) =>
-    set((state) => ({ keyState: { ...state.keyState, [key]: value } })),
+  setKeyState: (key: string, value: boolean) => {
+    set((state) => ({ keyState: { ...state.keyState, [key]: value } }));
+  },
 }));
 
 export function KeyboardInput() {
