@@ -1,7 +1,10 @@
 export const FR_SCALE = 0.2 as const;
-export const MOB_MAXIMUM = 5 as const;
-export const ClinetWidth = 800 as const;
-export const ClinetHeight = 600 as const;
-export const MobSize = 60 as const;
-export const MobSizeHalf = 30 as const;
+export const MOB_MAXIMUM = 20 as const;
+export const ClinetWidth = 1280 as const;
+export const ClinetHeight = 1080 as const;
+export const MaxDistance = 1000 as const;
+export const MobSize = 120 as const;
+export const MobSizeHalf = 60 as const;
 export const PlayerMinDistace = -5 as const;
+export const ItemSize = 100 as const;
+export const baseCollectionRange = 150 as const;
