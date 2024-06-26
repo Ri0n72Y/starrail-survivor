@@ -78,6 +78,7 @@ export const usePlayers = create<Players>()((set, get) => ({
       collectingRange: 1,
     };
     useExp.getState().updatePlayerExp([id], [0]);
+    useExp.getState().updatePlayerLvl([id], [0]);
     set((state) => ({
       players: {
         ...state.players,
