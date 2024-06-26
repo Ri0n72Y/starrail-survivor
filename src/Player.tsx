@@ -69,8 +69,8 @@ export function Player({ id }: { id: string }) {
       const restart = (e: KeyboardEvent) => {
         if (e.key === "Escape") {
           ticker.start();
+          window.removeEventListener("keydown", restart);
         }
-        window.removeEventListener("keydown", restart);
       };
       window.addEventListener("keydown", restart);
     }

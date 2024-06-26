@@ -1,5 +1,5 @@
-import { Sprite, useTick } from "@pixi/react";
-import { useMemo } from "react";
+import { Sprite, useApp, useTick } from "@pixi/react";
+import { useEffect, useMemo } from "react";
 import { useExp } from "../store/useExp";
 import {
   ClinetHeight,
@@ -18,6 +18,7 @@ export function ExpSystem() {
       <ExpCollector />
       <StaticExps />
       <FlyingExps />
+      <ExpUpdater />
     </>
   );
 }
@@ -36,6 +37,23 @@ function collect(pid: string, exp: ExpProps) {
   const exps = useFlyingExp.getState()[pid] ?? [];
   exps.push(exp);
   useFlyingExp.setState({ [pid]: exps });
+}
+
+function ExpUpdater() {
+  const [exps, lvls, levelUp] = useExp((state) => [
+    state.playerExp,
+    state.playerLvl,
+    state.levelUp,
+  ]);
+  const { ticker } = useApp();
+  useEffect(() => {
+    Object.keys(exps).forEach((id) => {
+      if (exps[id] >= lvls[id] ** 2 + 5) {
+        levelUp(id);
+      }
+    });
+  }, [exps, levelUp, lvls, ticker]);
+  return null;
 }
 
 function ExpCollector() {
@@ -64,6 +82,8 @@ function ExpCollector() {
   return null;
 }
 
+const initialSpeed = 15 as const;
+const accScale = 1.5 as const;
 function FlyingExps() {
   const exps = useFlyingExp();
   const pPos = usePlayers((state) => state.positions);
@@ -87,14 +107,14 @@ function FlyingExps() {
           });
           // no initial velocity
           if (vx === 0 && vy === 0) {
-            vx = velocity.x * 10;
-            vy = velocity.y * 10;
+            vx = velocity.x * -initialSpeed;
+            vy = velocity.y * -initialSpeed;
             list[i] = { value, x, y, vx, vy };
           } else {
             x = x + vx;
             y = y + vy;
-            vx = Math.min(vx + velocity.x * 5, MaxFlyingSpeed) * delta * 0.8;
-            vy = Math.min(vy + velocity.y * 5, MaxFlyingSpeed) * delta * 0.8;
+            vx = Math.min(vx + velocity.x * accScale, MaxFlyingSpeed) * delta;
+            vy = Math.min(vy + velocity.y * accScale, MaxFlyingSpeed) * delta;
             list[i] = { value, x, y, vx, vy };
           }
         }
